@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>VanityGen++ // HED</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap');
+
+:root {
+  --g0: #0a0a0a; --g1: #0f140f; --g2: #141a14;
+  --grn: #00ff41; --grn2: #00cc33; --grn3: #0a7a0a;
+  --cyn: #00e5ff; --red: #ff0040; --ylw: #ffdd00;
+  --dim: #335533; --dim2: #1a3a1a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Fira Code', 'Courier New', monospace;
+  background: var(--g0);
+  color: var(--grn);
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,255,65,0.015) 3px,
+    rgba(0,255,65,0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 20px 30px;
+}
+
+/* Header */
+.header {
+  border: 1px solid var(--grn3);
+  background: var(--g1);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60px; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.08), transparent);
+  animation: sweep 4s ease-in-out infinite;
+}
+
+@keyframes sweep { 0%,100%{left:-100%} 50%{left:100%} }
+
+.header h1 {
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(0,255,65,0.4);
+}
+
+.header .sub {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+/* Status line */
+.statusline {
+  background: var(--g2);
+  border-left: 3px solid var(--grn);
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--grn2);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusline .dot {
+  width: 8px; height: 8px;
+  background: var(--grn);
+  display: inline-block;
+  margin-right: 8px;
+  box-shadow: 0 0 6px var(--grn);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.statusline .dot.off { background: var(--red); box-shadow: 0 0 6px var(--red); animation: none; }
+.statusline .dot.run { background: var(--ylw); box-shadow: 0 0 6px var(--ylw); animation: pulse 0.6s ease-in-out infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Panels */
+.panel {
+  background: var(--g1);
+  border: 1px solid var(--dim2);
+  margin-bottom: 12px;
+}
+
+.panel-head {
+  background: var(--g2);
+  border-bottom: 1px solid var(--dim2);
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--cyn);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-head::before { content: '>_'; color: var(--grn); font-weight: 600; }
+
+.panel-body { padding: 12px 14px; }
+
+/* Form elements */
+.row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+.row:last-child { margin-bottom: 0; }
+.col { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+label {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+input[type="text"], select {
+  background: var(--g0);
+  border: 1px solid var(--dim2);
+  color: var(--grn);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus, select:focus {
+  border-color: var(--grn);
+  box-shadow: 0 0 8px rgba(0,255,65,0.15);
+}
+
+input[type="text"]::placeholder { color: var(--dim2); font-style: italic; }
+
+/* Checkboxes */
+.chk-row { display: flex; gap: 18px; flex-wrap: wrap; }
+.chk-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--grn2); cursor: pointer;
+  user-select: none;
+}
+.chk-label input[type="checkbox"] { accent-color: var(--grn); cursor: pointer; }
+
+/* Buttons */
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border: 1px solid;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.btn-go {
+  border-color: var(--grn);
+  color: var(--grn);
+}
+.btn-go:hover {
+  background: var(--grn);
+  color: var(--g0);
+  box-shadow: 0 0 20px rgba(0,255,65,0.3);
+}
+
+.btn-stop {
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-stop:hover {
+  background: var(--red);
+  color: var(--g0);
+  box-shadow: 0 0 20px rgba(255,0,64,0.3);
+}
+
+.btn-sec {
+  border-color: var(--dim);
+  color: var(--dim);
+}
+.btn-sec:hover {
+  border-color: var(--cyn);
+  color: var(--cyn);
+}
+
+.btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+/* Terminal */
+.term {
+  background: var(--g0);
+  border: 1px solid var(--dim2);
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  overflow-y: auto;
+  min-height: 120px;
+  max-height: 250px;
+}
+
+.term-line { margin-bottom: 2px; word-break: break-all; }
+.term-line.out { color: var(--grn); }
+.term-line.err { color: var(--cyn); }
+.term-line.sys { color: var(--dim); }
+.term-line.match { color: var(--ylw); font-weight: 600; }
+.term-line.bad { color: var(--red); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--g0); }
+::-webkit-scrollbar-thumb { background: var(--grn3); }
+
+/* File pickers inline */
+.file-row {
+  display: flex; gap: 6px; align-items: center;
+}
+.file-row input { flex: 1; }
+.file-row .btn { padding: 7px 10px; font-size: 10px; }
+
+/* Binary status */
+.bin-status {
+  font-size: 10px;
+  padding: 6px 12px;
+  border-left: 3px solid var(--dim);
+  color: var(--dim);
+  margin-bottom: 12px;
+}
+.bin-status.ok { border-color: var(--grn); color: var(--grn); }
+.bin-status.fail { border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Header -->
+  <div class="header">
+    <h1>VanityGen++</h1>
+    <div class="sub">bitcoin & altcoin vanity address generator [vanitygen-plusplus]</div>
+  </div>
+
+  <!-- Status -->
+  <div class="statusline">
+    <span><span class="dot" id="dot"></span><span id="statusText">INITIALIZING...</span></span>
+    <span id="binaryInfo" style="font-size:10px; color:var(--dim);">checking binary...</span>
+  </div>
+
+  <!-- Binary check -->
+  <div class="bin-status" id="binStatus">scanning for vanitygen binary...</div>
+
+  <!-- Pattern -->
+  <div class="panel">
+    <div class="panel-head">pattern input</div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col">
+          <label>Address Pattern</label>
+          <input type="text" id="pattern" placeholder="e.g. 1Vanity* or 0xABC..." autofocus>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <label>Pattern File (optional)</label>
+          <div class="file-row">
+            <input type="text" id="patternFile" placeholder="load patterns from .txt file...">
+            <button class="btn btn-sec" onclick="pickPatternFile()">BROWSE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="panel">
+    <div class="panel-head">configuration</div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col">
+          <label>Coin</label>
+          <select id="coin">
+            <option value="">BTC (default)</option>
+            <option value="ETH">ETH - Ethereum</option>
+            <option value="XLM">XLM - Stellar</option>
+            <option value="ATOM">ATOM - Cosmos</option>
+            <option value="TRX">TRX - Tron</option>
+            <option value="GRS">GRS - Groestlcoin</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Threads</label>
+          <select id="threads">
+            <option value="">Auto (CPU count)</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="16">16</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Key Format</label>
+          <select id="format">
+            <option value="">Pubkey (default)</option>
+            <option value="compressed">Compressed</option>
+            <option value="p2wpkh">P2WPKH (bech32)</option>
+            <option value="p2tr">P2TR (taproot)</option>
+            <option value="script">Script (P2SH)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chk-row" style="margin-top: 8px;">
+        <label class="chk-label"><input type="checkbox" id="caseInsensitive"> Case Insensitive (-i)</label>
+        <label class="chk-label"><input type="checkbox" id="regex"> Regex Mode (-r)</label>
+        <label class="chk-label"><input type="checkbox" id="keepMatching" checked> Keep Matching (-k)</label>
+        <label class="chk-label"><input type="checkbox" id="csv"> CSV Output (-z)</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Files -->
+  <div class="panel">
+    <div class="panel-head">output / seed</div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col">
+          <label>Output File (-o)</label>
+          <div class="file-row">
+            <input type="text" id="outputFile" placeholder="matches.txt">
+            <button class="btn btn-sec" onclick="pickOutputFile()">SAVE AS</button>
+          </div>
+        </div>
+        <div class="col">
+          <label>RNG Seed File (-s)</label>
+          <div class="file-row">
+            <input type="text" id="seedFile" placeholder="/dev/urandom">
+            <button class="btn btn-sec" onclick="pickSeedFile()">BROWSE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="panel">
+    <div class="panel-head">process control</div>
+    <div class="panel-body">
+      <div class="btns">
+        <button class="btn btn-go" id="btnStart" onclick="startSearch()">&#9654; INIT SEQUENCE</button>
+        <button class="btn btn-stop" id="btnStop" onclick="stopSearch()" disabled>&#9632; ABORT</button>
+        <button class="btn btn-sec" onclick="clearTerm()">CLEAR LOG</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal Output -->
+  <div class="panel">
+    <div class="panel-head">live output</div>
+    <div class="term" id="term">
+      <div class="term-line sys">>>_ system ready. enter pattern and initiate sequence.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let running = false;
+
+// Check binary on load
+window.vg.findBinary().then(p => {
+  const el = $('binStatus');
+  if (p) {
+    el.textContent = '>> binary: ' + p + ' [FOUND]';
+    el.className = 'bin-status ok';
+    $('binaryInfo').textContent = p.split('/').pop();
+    setStatus('READY', 'dot');
+  } else {
+    el.textContent = '>> binary not found. run `make` in project root first.';
+    el.className = 'bin-status fail';
+    $('binaryInfo').textContent = 'NOT FOUND';
+    setStatus('NO BINARY', 'dot off');
+  }
+});
+
+// Listen for process output
+window.vg.onStdout(data => {
+  const lines = data.split('\n').filter(l => l.trim());
+  lines.forEach(l => {
+    if (l.includes('Pattern:')) {
+      addLine(l, 'match');
+    } else if (l.includes('Address:') || l.includes('Privkey:')) {
+      addLine(l, 'match');
+    } else {
+      addLine(l, 'out');
+    }
+  });
+  scrollTerm();
+});
+
+window.vg.onStderr(data => {
+  const lines = data.split('\n').filter(l => l.trim());
+  lines.forEach(l => {
+    if (l.includes('WARNING')) {
+      addLine('[!] ' + l, 'err');
+    } else if (l.includes('Difficulty') || l.includes('%')) {
+      addLine('[~] ' + l, 'sys');
+    } else {
+      addLine(l, 'err');
+    }
+  });
+  scrollTerm();
+});
+
+window.vg.onExit(code => {
+  running = false;
+  $('btnStart').disabled = false;
+  $('btnStop').disabled = true;
+  if (code === 0) {
+    addLine('>>_ process exited [OK] code=0', 'sys');
+    setStatus('COMPLETE', 'dot');
+  } else {
+    addLine('>>_ process exited code=' + code, 'bad');
+    setStatus('STOPPED', 'dot off');
+  }
+  scrollTerm();
+});
+
+function setStatus(text, dotClass) {
+  $('statusText').textContent = text;
+  $('dot').className = dotClass;
+}
+
+function addLine(text, cls) {
+  const term = $('term');
+  const div = document.createElement('div');
+  div.className = 'term-line ' + (cls || 'out');
+  div.textContent = text;
+  term.appendChild(div);
+
+  while (term.children.length > 500) {
+    term.removeChild(term.firstChild);
+  }
+}
+
+function scrollTerm() {
+  const term = $('term');
+  term.scrollTop = term.scrollHeight;
+}
+
+function buildArgs() {
+  const args = [];
+
+  const coin = $('coin').value;
+  if (coin) args.push('-C', coin);
+
+  const threads = $('threads').value;
+  if (threads) args.push('-t', threads);
+
+  const format = $('format').value;
+  if (format) args.push('-F', format);
+
+  if ($('caseInsensitive').checked) args.push('-i');
+  if ($('regex').checked) args.push('-r');
+  if ($('keepMatching').checked) args.push('-k');
+  if ($('csv').checked) args.push('-z');
+
+  const outFile = $('outputFile').value.trim();
+  if (outFile) args.push('-o', outFile);
+
+  const seedFile = $('seedFile').value.trim();
+  if (seedFile) args.push('-s', seedFile);
+
+  const pattFile = $('patternFile').value.trim();
+  if (pattFile) {
+    args.push('-f', pattFile);
+  } else {
+    const pat = $('pattern').value.trim();
+    if (!pat) return null;
+    args.push(pat);
+  }
+
+  return args;
+}
+
+async function startSearch() {
+  const args = buildArgs();
+  if (!args) {
+    addLine('>>_ ERROR: no pattern specified', 'bad');
+    return;
+  }
+
+  addLine('>>_ executing: vanitygen ' + args.join(' '), 'sys');
+
+  const res = await window.vg.run(args);
+  if (res.error) {
+    addLine('>>_ ERROR: ' + res.error, 'bad');
+    return;
+  }
+
+  running = true;
+  $('btnStart').disabled = true;
+  $('btnStop').disabled = false;
+  setStatus('SEARCHING...', 'dot run');
+  scrollTerm();
+}
+
+async function stopSearch() {
+  const res = await window.vg.stop();
+  addLine('>>_ SIGTERM sent', 'bad');
+  setStatus('ABORTING...', 'dot off');
+  scrollTerm();
+}
+
+function clearTerm() {
+  $('term').innerHTML = '<div class="term-line sys">>>_ terminal cleared.</div>';
+}
+
+async function pickOutputFile() {
+  const f = await window.vg.selectOutputFile();
+  if (f) $('outputFile').value = f;
+}
+
+async function pickPatternFile() {
+  const f = await window.vg.selectPatternFile();
+  if (f) $('patternFile').value = f;
+}
+
+async function pickSeedFile() {
+  const f = await window.vg.selectSeedFile();
+  if (f) $('seedFile').value = f;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "vanitygen-gui",
+  "version": "1.0.0",
+  "description": "GUI for VanityGen+Plus - Bitcoin Vanity Address Generator",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}
